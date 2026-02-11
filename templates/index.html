@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make it a Quote - 引用画像ジェネレーター</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'MPLUSRounded1c-Regular', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            background: #1A1A1E;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-section h1 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ececf0;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #2f3136;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #2f3136;
+            color: #ffffff;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #72767d;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #5b65f5;
+            box-shadow: 0 0 0 3px rgba(91, 101, 245, 0.1);
+            background: #36393f;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .type-option {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+        .type-option label {
+            display: block;
+            padding: 12px;
+            border: 2px solid #2f3136;
+            border-radius: 8px;
+            text-align: center;
+            margin: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #2f3136;
+            color: #ececf0;
+        }
+
+        .type-option input[type="radio"]:checked + label {
+            background: #5b65f5;
+            color: white;
+            border-color: #5b65f5;
+        }
+
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-section h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .preview-container {
+            background: #2f3136;
+            border-radius: 12px;
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            overflow: auto;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading {
+            color: #72767d;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-generate {
+            background: #5b65f5;
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .btn-generate:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(91, 101, 245, 0.3);
+        }
+
+        .btn-download {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-download:disabled {
+            background: #72767d;
+            cursor: not-allowed;
+        }
+
+        .btn-copy {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(237, 137, 54, 0.3);
+        }
+
+        .icon-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-top: 8px;
+            object-fit: cover;
+            border: 3px solid #2f3136;
+        }
+
+        .icon-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2f3136;
+            border: 3px solid #2f3136;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .type-selector {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: #2f3136;
+            border: 1px solid #43b581;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .success {
+            color: #43b581;
+            background: #2f3136;
+            border: 1px solid #43b581;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #43b581;
+        }
+
+        .footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #2f3136;
+            color: #72767d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h1>引用画像を作成</h1>
+            
+            <div id="message"></div>
+
+            <form id="quoteForm">
+                <div class="form-group">
+                    <label for="content">内容 *</label>
+                    <textarea id="content" name="content" placeholder="引用したいテキストを入力してください" required>Make it a Quote</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">名前 *</label>
+                    <input type="text" id="name" name="name" placeholder="例: 田中太郎" value="Churo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="id">ID *</label>
+                    <input type="text" id="id" name="id" placeholder="例: @user123" value="@churo6322" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="icon">アイコン画像 (URL) *</label>
+                    <input type="url" id="icon" name="icon" placeholder="https://example.com/image.png" value="https://level-white-u4puj75m0m.edgeone.app/re%20%E6%88%91%E3%81%8C%E6%89%8B%E4%B8%AD%EF%BC%88ae%EF%BC%89.png" required>
+                    <div id="iconPreview" class="icon-placeholder"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>フォント *</label>
+                    <div class="type-selector">
+                        <div class="type-option">
+                            <input type="radio" id="fontMplus" name="font" value="mplus" checked>
+                            <label for="fontMplus">M+ Rounded</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="fontRuika" name="font" value="ruika">
+                            <label for="fontRuika">ハッピールイカ</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="fontShinonome" name="font" value="shinonome">
+                            <label for="fontShinonome">JFドット東雲ゴシック</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="fontTanuki" name="font" value="tanuki">
+                            <label for="fontTanuki">たぬき油性マジック</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>スタイル *</label>
+                    <div class="type-selector">
+                        <div class="type-option">
+                            <input type="radio" id="typeDefault" name="type" value="default" checked>
+                            <label for="typeDefault">デフォルト</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="typeColor" name="type" value="color">
+                            <label for="typeColor">カラー</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="typeReverse" name="type" value="reverse">
+                            <label for="typeReverse">反転</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="typeReverseColor" name="type" value="reverseColor">
+                            <label for="typeReverseColor">反転+カラー</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="typeWhite" name="type" value="white">
+                            <label for="typeWhite">ホワイト</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="typeReverseWhite" name="type" value="reverseWhite">
+                            <label for="typeReverseWhite">反転+ホワイト</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-generate" onclick="generatePreview()">プレビューを生成</button>
+                </div>
+
+                <div class="button-group" style="margin-top: 10px;">
+                    <button type="button" class="btn-download" id="downloadBtn" disabled onclick="downloadImage()">画像をダウンロード</button>
+                    <button type="button" class="btn-copy" onclick="copyImageURL()">URLをコピー</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="preview-section">
+            <h2>プレビュー</h2>
+            <div class="preview-container">
+                <div id="previewArea" class="loading">
+                    「プレビューを生成」をクリックして画像を表示
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 Sy All Rights Reserved.
+        </div>
+    </div>
+
+    <script>
+        let currentImageUrl = null;
+
+        function getIconPreview(url) {
+            const preview = document.getElementById('iconPreview');
+            if (!url) {
+                preview.classList.remove('icon-preview');
+                preview.classList.add('icon-placeholder');
+                return;
+            }
+            const img = new Image();
+            img.onload = function() {
+                preview.style.backgroundImage = `url('${url}')`;
+                preview.style.backgroundSize = 'cover';
+                preview.classList.remove('icon-placeholder');
+                preview.style.width = '60px';
+                preview.style.height = '60px';
+                preview.style.borderRadius = '50%';
+                preview.style.marginTop = '8px';
+                preview.style.border = '3px solid #e0e0e0';
+            };
+            img.onerror = function() {
+                console.error('アイコン画像の読み込みに失敗しました');
+            };
+            img.src = url;
+        }
+
+        document.getElementById('icon').addEventListener('change', function() {
+            getIconPreview(this.value);
+        });
+
+        // 初期アイコン表示
+        getIconPreview(document.getElementById('icon').value);
+
+        function buildImageURL() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const name = document.getElementById('name').value;
+            const id = document.getElementById('id').value;
+            const content = document.getElementById('content').value;
+            const icon = document.getElementById('icon').value;
+            const font = document.querySelector('input[name="font"]:checked').value;
+
+            let url = '/api/generate?';
+            const params = new URLSearchParams({
+                type: type !== 'default' ? type : '',
+                name: name,
+                id: id,
+                content: content,
+                icon: icon,
+                font: font
+            });
+            
+            url += params.toString();
+            return url;
+        }
+
+        function generatePreview() {
+            const previewArea = document.getElementById('previewArea');
+            const form = document.getElementById('quoteForm');
+
+            if (!form.checkValidity()) {
+                showMessage('すべての必須項目を入力してください', 'error');
+                return;
+            }
+
+            previewArea.innerHTML = '<div class="loading">生成中...</div>';
+            
+            currentImageUrl = buildImageURL();
+
+            const img = new Image();
+            img.onload = function() {
+                previewArea.innerHTML = '';
+                previewArea.appendChild(img);
+                img.classList.add('preview-image');
+                document.getElementById('downloadBtn').disabled = false;
+                showMessage('プレビューを生成しました', 'success');
+            };
+            img.onerror = function() {
+                previewArea.innerHTML = '<div class="loading" style="color: #e53e3e;">画像の生成に失敗しました。アイコンURLが正しいか確認してください。</div>';
+                document.getElementById('downloadBtn').disabled = true;
+                showMessage('画像の生成に失敗しました。入力内容を確認してください。', 'error');
+            };
+            img.src = currentImageUrl + '&t=' + Date.now();
+        }
+
+        function downloadImage() {
+            if (!currentImageUrl) {
+                showMessage('先にプレビューを生成してください', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = currentImageUrl;
+            link.download = `quote-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showMessage('ダウンロードを開始しました', 'success');
+        }
+
+        function copyImageURL() {
+            if (!currentImageUrl) {
+                showMessage('先にプレビューを生成してください', 'error');
+                return;
+            }
+
+            const fullURL = window.location.origin + currentImageUrl;
+            navigator.clipboard.writeText(fullURL).then(function() {
+                showMessage('URLをコピーしました！', 'success');
+            }).catch(function(err) {
+                showMessage('URLのコピーに失敗しました', 'error');
+                console.error(err);
+            });
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = type;
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = '';
+            }, 4000);
+        }
+
+        // Enterキーでフォーム送信時のデフォルト動作を防止
+        document.getElementById('quoteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generatePreview();
+        });
+
+        // リアルタイム入力検出（オプション：2秒の間隔で自動生成）
+        let autoRefreshTimeout;
+        const formInputs = document.querySelectorAll('#quoteForm input, #quoteForm textarea, #quoteForm select');
+        formInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                clearTimeout(autoRefreshTimeout);
+                autoRefreshTimeout = setTimeout(() => {
+                    if (currentImageUrl) {
+                        generatePreview();
+                    }
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
