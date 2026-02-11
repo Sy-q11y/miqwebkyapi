@@ -17,7 +17,7 @@ BASE_RV_W_IMAGE = Image.open("images/base-gd-w-rv.png")
 
 BASE_IMAGE = Image.open("images/base.png")
 MPLUS_FONT = ImageFont.truetype("fonts/MPLUSRounded1c-Regular.ttf", size=16)
-BRAND = "Created by Sy"
+BRAND = ""
 
 FONTS = {
     "mplus": "fonts/MPLUSRounded1c-Regular.ttf",
